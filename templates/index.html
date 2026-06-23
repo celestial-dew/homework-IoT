@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>智慧农业大棚监控系统 | 环境调控平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Roboto', 'Noto Sans', sans-serif;
+        }
+
+        body {
+            background: #eef5e8;
+            padding: 24px 20px;
+            color: #1e2f1c;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 头部 */
+        .header {
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 3px solid #5b8c5a;
+            padding-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #2b5e2b, #6f9e3f);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .sub {
+            color: #4a6741;
+            font-size: 0.9rem;
+            font-weight: 500;
+            background: #e0f0da;
+            padding: 6px 12px;
+            border-radius: 40px;
+        }
+
+        .refresh-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            background: #f9fbf7;
+            border: 1px solid #cbdcc2;
+            color: #2c5e2a;
+        }
+
+        button.primary {
+            background: #3c7a3a;
+            border: none;
+            color: white;
+            box-shadow: 0 2px 6px rgba(60, 122, 58, 0.3);
+        }
+
+        button.primary:hover {
+            background: #2c5e2a;
+            transform: translateY(-1px);
+        }
+
+        button.danger {
+            background: #fff0f0;
+            border-color: #e0b4b4;
+            color: #b13e3e;
+        }
+
+        button:hover {
+            background: #e9f3e4;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        /* 传感器卡片网格 */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 22px;
+            margin: 28px 0 32px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(2px);
+            border-radius: 36px;
+            padding: 20px 18px;
+            box-shadow: 0 12px 28px rgba(0, 20, 0, 0.08);
+            transition: all 0.2s;
+            border: 1px solid #d9e5d0;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 30px -12px rgba(40, 70, 30, 0.2);
+        }
+
+        .card-icon {
+            font-size: 2.3rem;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #5c7c52;
+            margin-bottom: 12px;
+        }
+
+        .card-value {
+            font-size: 2.7rem;
+            font-weight: 800;
+            color: #1f3b1c;
+            line-height: 1.2;
+        }
+
+        .card-unit {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #6f8f66;
+            margin-left: 5px;
+        }
+
+        .card-time {
+            font-size: 0.7rem;
+            color: #8da17e;
+            margin-top: 14px;
+            border-top: 1px dashed #d4e2ca;
+            padding-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge {
+            background: #e2f0db;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .led-state {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 14px;
+            background: #aaa;
+            margin-right: 8px;
+            box-shadow: 0 0 2px;
+        }
+
+        .led-on {
+            background: #f3b33d;
+            box-shadow: 0 0 6px #ffb347;
+        }
+
+        .led-off {
+            background: #596656;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 18px;
+            justify-content: space-between;
+        }
+
+        .ctrl-btn {
+            flex: 1;
+            text-align: center;
+            background: #f0f4ec;
+            border-radius: 60px;
+            padding: 8px 0;
+            font-weight: bold;
+            transition: 0.1s;
+        }
+
+        .ctrl-btn.on {
+            background: #facf5a;
+            color: #3d5a2b;
+            border-color: #e0b85b;
+        }
+
+        .ctrl-btn.off {
+            background: #e1e6db;
+            color: #555;
+        }
+
+        /* 历史区域 */
+        .history-section {
+            background: #ffffffdb;
+            border-radius: 32px;
+            padding: 20px 20px 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+            border: 1px solid #ddebd4;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d5727;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px 8px;
+            background: #eef3e9;
+            color: #2b4727;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #e2edd9;
+            color: #2a3e24;
+        }
+
+        tr:hover {
+            background: #f6fcf1;
+        }
+
+        .sensor-tag {
+            background: #e1efd8;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1f3b1c;
+            color: white;
+            padding: 12px 22px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: 0.2s;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .toast-msg.show {
+            opacity: 1;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.7rem;
+            color: #7b9470;
+        }
+
+        @media (max-width: 680px) {
+            body {
+                padding: 16px;
+            }
+
+            .card-value {
+                font-size: 2rem;
+            }
+
+            .ctrl-btn {
+                padding: 6px 0;
+            }
+        }
+
+        .status-text {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>🌱 智慧农业大棚 · 环境调控系统</h1>
+                <div style="margin-top: 8px; display: flex; gap: 12px; flex-wrap: wrap;">
+                    <span class="sub">📍 1号温室 | 远程监控 & 智能决策</span>
+                    <span class="sub">📡 MQTT · 实时云上报</span>
+                </div>
+            </div>
+            <div class="refresh-bar">
+                <button id="manualRefreshBtn" class="primary">🔄 刷新所有数据</button>
+                <button id="refreshHistoryBtn">📋 刷新历史记录</button>
+            </div>
+        </div>
+
+        <!-- 传感器卡片区 + LED执行器卡片 -->
+        <div class="dashboard">
+            <!-- 温度卡片 -->
+            <div class="card" id="card-temp">
+                <div class="card-icon">🌡️</div>
+                <div class="card-title">空气温度</div>
+                <div><span class="card-value" id="tempValue">--</span><span class="card-unit" id="tempUnit">°C</span>
+                </div>
+                <div class="card-time"><span>🕒 最后更新</span> <span id="tempTime">---</span></div>
+            </div>
+            <!-- 湿度卡片 -->
+            <div class="card" id="card-hum">
+                <div class="card-icon">💧</div>
+                <div class="card-title">空气湿度</div>
+                <div><span class="card-value" id="humValue">--</span><span class="card-unit" id="humUnit">%RH</span>
+                </div>
+                <div class="card-time"><span>🕒 最后更新</span> <span id="humTime">---</span></div>
+            </div>
+            <!-- 土壤湿度卡片 -->
+            <div class="card" id="card-soil">
+                <div class="card-icon">🌾</div>
+                <div class="card-title">土壤湿度</div>
+                <div><span class="card-value" id="soilValue">--</span><span class="card-unit" id="soilUnit">%</span>
+                </div>
+                <div class="card-time"><span>🕒 最后更新</span> <span id="soilTime">---</span></div>
+            </div>
+            <!-- 光照强度卡片 (注意主题末尾字段light, json内sensor不同但前端统一处理) -->
+            <div class="card" id="card-light">
+                <div class="card-icon">☀️</div>
+                <div class="card-title">光照强度</div>
+                <div><span class="card-value" id="lightValue">--</span><span class="card-unit" id="lightUnit">%</span>
+                </div>
+                <div class="card-time"><span>🕒 最后更新</span> <span id="lightTime">---</span></div>
+            </div>
+            <!-- LED 执行器卡片 (含状态显示和控制) -->
+            <div class="card" id="card-actuator">
+                <div class="card-icon">💡🔌</div>
+                <div class="card-title">灌溉/通风模拟 (LED)</div>
+                <div class="status-text" style="margin-bottom: 8px;">
+                    <span class="led-state" id="ledBulb"></span>
+                    <span id="ledStateText" style="font-weight: 600;">--</span>
+                </div>
+                <div class="control-group">
+                    <button class="ctrl-btn on" id="btnLedOn">✅ 开启 (ON)</button>
+                    <button class="ctrl-btn off" id="btnLedOff">⛔ 关闭 (OFF)</button>
+                </div>
+                <div class="card-time"><span>🕒 状态反馈时间</span> <span id="ledTime">---</span></div>
+            </div>
+        </div>
+
+        <!-- 历史数据表格区域（展示传感器历史） -->
+        <div class="history-section">
+            <div class="section-header">
+                <h2>📜 环境数据历史记录 <span style="font-size:0.8rem;">(最近100条)</span></h2>
+                <div><span class="badge">🔄 自动刷新实时数据 | 历史手动/自动均可</span></div>
+            </div>
+            <div class="table-wrapper">
+                <table id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>时间戳</th>
+                            <th>传感器类型</th>
+                            <th>数值</th>
+                            <th>单位</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody">
+                        <tr>
+                            <td colspan="4" style="text-align:center;">加载历史数据中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="font-size:0.7rem; margin-top: 16px; color:#77996b; text-align:right;">*
+                数据来源于MQTT上报，每5秒设备采集一次，最多保留100条</div>
+        </div>
+        <footer>智慧农业大棚 | 端到端MQTT通信 + Flask应用层 | 远程控制LED模拟水泵/风扇</footer>
+    </div>
+    <div id="toastMsg" class="toast-msg">✅ 操作成功</div>
+
+    <script>
+        // API 地址 (相对路径)
+        const API_LATEST = "/api/latest";
+        const API_HISTORY = "/api/history";
+        const API_CONTROL = "/api/control";
+
+        // 轮询间隔 (ms)
+        const POLL_INTERVAL = 3000;  // 3秒更新实时卡片
+        let pollTimer = null;
+
+        // 友好名称映射 & 单位兼容 (光照sensor字段为light_intensity，展示统一)
+        const sensorNameMap = {
+            "temperature": "🌡️ 温度",
+            "humidity": "💧 湿度",
+            "soil_moisture": "🌾 土壤湿度",
+            "light_intensity": "☀️ 光照强度",
+            "light": "☀️ 光照强度",    // 兼容
+            "led": "💡 执行器状态"
+        };
+
+        // 获取最新数据并刷新所有卡片
+        async function fetchLatestData() {
+            try {
+                const response = await fetch(API_LATEST, { cache: 'no-store' });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                // data 格式: { "temperature": {...}, "humidity": {...}, "soil_moisture": {...}, "light": {...}, "led": {...} }
+                updateSensorCards(data);
+                return data;
+            } catch (error) {
+                console.error("获取最新数据失败:", error);
+                showToast("⚠️ 获取实时数据失败，检查后端服务", true);
+            }
+        }
+
+        // 更新5个卡片内容
+        function updateSensorCards(latestObj) {
+            // 温度
+            const temp = latestObj.temperature;
+            updateSingleCard("tempValue", temp?.value ?? "--", temp?.unit ?? "°C");
+            document.getElementById("tempTime").innerText = temp?.timestamp ? formatTimeShort(temp.timestamp) : "暂无";
+            if (temp?.unit) document.getElementById("tempUnit").innerText = temp.unit === "celsius" ? "°C" : temp.unit;
+            // 湿度
+            const hum = latestObj.humidity;
+            updateSingleCard("humValue", hum?.value ?? "--", hum?.unit ?? "%");
+            document.getElementById("humTime").innerText = hum?.timestamp ? formatTimeShort(hum.timestamp) : "暂无";
+            if (hum?.unit) document.getElementById("humUnit").innerText = hum.unit === "%" ? "%RH" : hum.unit;
+            // 土壤湿度
+            const soil = latestObj.soil_moisture;
+            updateSingleCard("soilValue", soil?.value ?? "--", soil?.unit ?? "%");
+            document.getElementById("soilTime").innerText = soil?.timestamp ? formatTimeShort(soil.timestamp) : "暂无";
+            if (soil?.unit) document.getElementById("soilUnit").innerText = soil.unit;
+            // 光照 (主题末尾字段light, 注意key为"light")
+            const light = latestObj.light;
+            updateSingleCard("lightValue", light?.value ?? "--", light?.unit ?? "%");
+            document.getElementById("lightTime").innerText = light?.timestamp ? formatTimeShort(light.timestamp) : "暂无";
+            if (light?.unit) document.getElementById("lightUnit").innerText = light.unit;
+
+            // LED执行器状态 (status/led 反馈)
+            const ledStatus = latestObj.led;
+            if (ledStatus && ledStatus.state !== undefined) {
+                const state = ledStatus.state;
+                const isOn = (state === "on" || state === true || state === "true");
+                const ledBulb = document.getElementById("ledBulb");
+                const ledText = document.getElementById("ledStateText");
+                if (isOn) {
+                    ledBulb.className = "led-state led-on";
+                    ledText.innerText = "🟢 设备开启 (水泵/风扇模拟)";
+                } else {
+                    ledBulb.className = "led-state led-off";
+                    ledText.innerText = "⚪ 设备关闭";
+                }
+                document.getElementById("ledTime").innerText = ledStatus.timestamp ? formatTimeShort(ledStatus.timestamp) : (ledStatus.time ? formatTimeShort(ledStatus.time) : "刚刚");
+            } else {
+                // 未获取到状态反馈
+                document.getElementById("ledBulb").className = "led-state led-off";
+                document.getElementById("ledStateText").innerText = "未获取状态";
+                document.getElementById("ledTime").innerText = "等待反馈";
+            }
+        }
+
+        function updateSingleCard(elementId, value, unitSuffix) {
+            const el = document.getElementById(elementId);
+            if (el) {
+                let displayValue = (value === "--" || value === undefined || value === null) ? "--" : value;
+                if (typeof displayValue === "number") displayValue = displayValue.toFixed(1);
+                el.innerText = displayValue;
+            }
+        }
+
+        // 格式化时间显示 (用于卡片: yyyy-mm-dd HH:MM:SS 截取时间部分)
+        function formatTimeShort(timestampStr) {
+            if (!timestampStr) return "未知";
+            // 原始格式类似 "2026-06-14 15:30:45"
+            return timestampStr.includes(" ") ? timestampStr.substring(5, 16) : timestampStr;
+        }
+
+        // 获取历史数据并渲染表格 (倒序，最新在上)
+        async function fetchHistoryData() {
+            try {
+                const response = await fetch(API_HISTORY);
+                if (!response.ok) throw new Error(`历史接口错误 ${response.status}`);
+                const historyList = await response.json();
+                renderHistoryTable(historyList);
+            } catch (error) {
+                console.error("获取历史数据失败:", error);
+                const tbody = document.getElementById("historyBody");
+                if (tbody) tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">❌ 加载历史失败，请检查后端</td></tr>`;
+                showToast("历史数据加载失败", true);
+            }
+        }
+
+        // 渲染历史表格 (每条记录包含 timestamp, sensor, value, unit 等)
+        function renderHistoryTable(records) {
+            const tbody = document.getElementById("historyBody");
+            if (!tbody) return;
+            if (!records || records.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">暂无历史数据，等待传感器上报...</td></tr>`;
+                return;
+            }
+            let html = "";
+            for (const item of records) {
+                // 从payload中提取信息：sensor字段可能是 temperature/humidity/soil_moisture/light_intensity
+                let sensorRaw = item.sensor || "未知";
+                let displaySensor = sensorNameMap[sensorRaw] || sensorRaw;
+                // 针对光照特殊优化显示 (因为上报sensor字段为light_intensity, 但主题是light，但历史记录里保留原始json)
+                if (sensorRaw === "light_intensity") displaySensor = "☀️ 光照强度";
+                if (sensorRaw === "soil_moisture") displaySensor = "🌾 土壤湿度";
+                if (sensorRaw === "temperature") displaySensor = "🌡️ 温度";
+                if (sensorRaw === "humidity") displaySensor = "💧 湿度";
+
+                let valueDisplay = (item.value !== undefined && item.value !== null) ? item.value : "--";
+                if (typeof valueDisplay === "number") valueDisplay = valueDisplay.toFixed(1);
+                let unitDisplay = item.unit || "";
+                if (sensorRaw === "temperature" && unitDisplay === "celsius") unitDisplay = "°C";
+                if (sensorRaw === "light_intensity" && !unitDisplay) unitDisplay = "%";
+                if (sensorRaw === "soil_moisture" && !unitDisplay) unitDisplay = "%";
+
+                let timeStr = item.timestamp || "未知时间";
+                html += `<tr>
+                        <td style="white-space: nowrap;">${escapeHtml(timeStr)}</td>
+                        <td><span class="sensor-tag">${escapeHtml(displaySensor)}</span></td>
+                        <td><strong>${escapeHtml(valueDisplay.toString())}</strong></td>
+                        <td>${escapeHtml(unitDisplay)}</td>
+                     </tr>`;
+            }
+            tbody.innerHTML = html;
+        }
+
+        // 简单的防XSS
+        function escapeHtml(str) {
+            if (!str) return "";
+            return str.replace(/[&<>]/g, function (m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function (c) {
+                return c;
+            });
+        }
+
+        // 控制指令发送 (开/关)
+        async function sendLedControl(state) {
+            const payload = { state: state };   // 格式 {"state":"on"} 或 "off"
+            try {
+                const response = await fetch(API_CONTROL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (response.ok && result.status === "ok") {
+                    showToast(`✅ 指令已发送: LED ${state === "on" ? "开启" : "关闭"}，设备执行中...`);
+                    // 等待1.5秒后拉取最新状态，以便看到反馈主题更新
+                    setTimeout(() => fetchLatestData(), 600);
+                    return true;
+                } else {
+                    showToast(`❌ 控制失败: ${result.msg || "未知错误"}`, true);
+                    return false;
+                }
+            } catch (err) {
+                console.error("控制请求异常", err);
+                showToast("网络异常，控制指令发送失败", true);
+                return false;
+            }
+        }
+
+        // 提示消息 (轻提示)
+        let toastTimeout = null;
+        function showToast(message, isError = false) {
+            const toast = document.getElementById("toastMsg");
+            if (!toast) return;
+            toast.innerText = message;
+            toast.style.backgroundColor = isError ? "#b13e3e" : "#1f3b1c";
+            toast.classList.add("show");
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove("show");
+                toast.style.backgroundColor = "#1f3b1c";
+            }, 2800);
+        }
+
+        // 手动刷新全部 (最新数据+历史数据)
+        function manualRefreshAll() {
+            fetchLatestData();
+            fetchHistoryData();
+            showToast("🔄 手动刷新数据中");
+        }
+
+        // 初始化界面、轮询机制、事件绑定
+        function init() {
+            // 绑定按钮
+            document.getElementById("manualRefreshBtn")?.addEventListener("click", manualRefreshAll);
+            document.getElementById("refreshHistoryBtn")?.addEventListener("click", () => {
+                fetchHistoryData();
+                showToast("📋 刷新历史记录");
+            });
+            document.getElementById("btnLedOn")?.addEventListener("click", () => sendLedControl("on"));
+            document.getElementById("btnLedOff")?.addEventListener("click", () => sendLedControl("off"));
+
+            // 首次加载数据
+            fetchLatestData();
+            fetchHistoryData();
+
+            // 启动定时轮询实时数据 (最新传感器值)
+            if (pollTimer) clearInterval(pollTimer);
+            pollTimer = setInterval(() => {
+                fetchLatestData();
+            }, POLL_INTERVAL);
+
+            // 可选：历史数据也可以每30秒刷新一次，保持表格最新（但不会频繁，不影响性能）
+            // 设置独立定时器每25秒刷新一次历史 (因为新数据上报会进入history)
+            setInterval(() => {
+                fetchHistoryData();
+            }, 25000);
+        }
+
+        // 页面关闭时停止轮询
+        window.addEventListener("beforeunload", () => {
+            if (pollTimer) clearInterval(pollTimer);
+        });
+
+        // 启动所有
+        init();
+    </script>
+</body>
+
+</html>
